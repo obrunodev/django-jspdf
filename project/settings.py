@@ -125,3 +125,10 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ========== ↓ PRIVATE IDS ↓ ==========
+# Docusign
+CLIENT_AUTH_ID = 'd99f26b5-c60d-48bb-b2d0-3fc7d78342ba'  # Settings -> Integrations -> Apps and keys -> Integration Key
+CLIENT_USER_ID = 'c6d82a85-d295-4b80-8655-7ce85922f411'  # Settings -> Integrations -> Apps and keys -> API User ID
+ACCOUNT_ID = '16ffccce-5497-4e35-ad9e-e8f034f9a309'  # Settings -> Integrations -> Apps and keys -> API Account ID
+# ========== ↑ PRIVATE IDS ↑ ==========

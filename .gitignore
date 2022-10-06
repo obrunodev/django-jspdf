@@ -2,3 +2,5 @@ venv/
 .env
 *.pyc
 __pycache__
+private.key
+docusign_files/
