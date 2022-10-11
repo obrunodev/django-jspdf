@@ -5,56 +5,51 @@ import json
 import jwt
 
 from datetime import date
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from docusign_esign import (RecipientViewRequest, EnvelopeDefinition, Document,
                             Signer, SignHere, Tabs, Recipients, ApiClient,
                             EnvelopesApi, Text, DateSigned, CarbonCopy)
 from project.settings import ACCOUNT_ID, BASE_DIR, CLIENT_AUTH_ID, CLIENT_USER_ID
-# from rest_framework.decorators import api_view
-from sign import tokens
+from rest_framework.decorators import api_view
+from sign import utils
 
 
 def create_jwt_grant_token():
-    token = tokens.docusign_token()
-    # print('TOKEN GERADO:', token)
+    token = utils.docusign_token()
     return token
 
 
 @csrf_exempt
 def docusign_signature(request):
-    try:
-        token = create_jwt_grant_token()
-        post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                     'assertion': token}
-        base_url = 'https://account-d.docusign.com/oauth/token'
-        r = requests.post(base_url, data=post_data)
-        token = r.json()
-        data = json.loads(request.body)
-        signer_email = data['email']
-        signer_name = data['full_name']
-        signer_type = data['type']
-        with open(os.path.join(BASE_DIR, 'docusign_files/', 'test_file.pdf'), 'rb') as file:
-            content_bytes = file.read()
-        base64_file_content = base64.b64encode(content_bytes).decode('ascii')
-        if signer_type == 'embedded':
+    if request.method == 'POST':
+        try:
+            token = create_jwt_grant_token()
+            post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                         'assertion': token}
+            base_url = 'https://account-d.docusign.com/oauth/token'
+            r = requests.post(base_url, data=post_data)
+            token = r.json()
+            signer_email = request.POST.get('email')
+            signer_name = request.POST.get('full_name')
+            signer_type = request.POST.get('type')
+            with open(os.path.join(BASE_DIR, 'docusign_files/', 'test_file.pdf'), 'rb') as file:
+                content_bytes = file.read()
+            base64_file_content = base64.b64encode(content_bytes).decode('ascii')
+            if signer_type != 'email':
+                return JsonResponse({"msg": "Tipo de assinatura inexistente."})
+            envelope_id = signature_by_email(token, base64_file_content, signer_email, signer_name)
             url = ''
-            envelope_id = ''
-            # url, envelope_id = signature_by_embedded(token, base64_file_content, signer_name, signer_email)
-        elif signer_type == 'email':
-            envelope_id = signature_by_email(token, base64_file_content, signer_name, signer_email)
-            url = ''
-        print('Chegou aqui: docusign.py, linha 47.')
-        # return JsonResponse({'docusign_url': url,
-        #                      'envelope_id': envelope_id,
-        #                      'message': 'Docusign',
-        #                      'error': ''})
-        return HttpResponse('Deu certo')
-    except Exception as e:
-        return JsonResponse({'docsign_url': '',
-                             'envelope_id': '',
-                             'message': 'Internal server error (docusign_signature)',
-                             'error': str(e)})
+            return JsonResponse({'docusign_url': url,
+                                 'envelope_id': envelope_id,
+                                 'message': 'Docusign',
+                                 'error': ''})
+            # return JsonResponse({'msg': 'Envelope criado!'})
+        except Exception as e:
+            return JsonResponse({'docsign_url': '',
+                                'envelope_id': '',
+                                'message': 'Internal server error (docusign_signature)',
+                                'error': str(e)})
 
 
 def make_envelope(base64_file_content, args):
@@ -62,7 +57,6 @@ def make_envelope(base64_file_content, args):
     
     - Utiliza um documento PDF para exemplificar.
     """
-    
     # Cria uma definição de envelope
     env = EnvelopeDefinition(email_subject='Por favor, assine estes documentos.')
     
@@ -106,19 +100,20 @@ def make_envelope(base64_file_content, args):
     return env
 
 
-def signature_by_email(token, base64_file_content):
+def signature_by_email(token, base64_file_content, signer_email, signer_name):
     try:
-        envelope_args = {'signer_email': 'bruno.pianca@alstratech.com',
-                         'signer_name': 'Bruno',
+        envelope_args = {'signer_email': signer_email,
+                         'signer_name': signer_name,
                          'cc_email': 'brunorpdev@gmail.com',
                          'cc_name': 'Bruno',
                          'status': 'sent'}
         envelope_definition = make_envelope(base64_file_content, envelope_args)
         try:
             # Cria e envia o envelope
-            api_client = ApiClient()
-            api_client.host = 'https://demo.docusign.net/restapi'
-            api_client.set_default_header('Authorization', 'Bearer ' + token['access_token'])
+            # api_client = ApiClient()
+            # api_client.host = 'https://demo.docusign.net/restapi'
+            # api_client.set_default_header('Authorization', 'Bearer ' + token['access_token'])
+            api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
             envelope_api = EnvelopesApi(api_client)
             results = envelope_api.create_envelope(account_id=ACCOUNT_ID,
                                                    envelope_definition=envelope_definition)
@@ -141,6 +136,8 @@ def docusign_completed(request):
     return HttpResponse("Assinatura concluída.")
 
 
+@api_view(['GET'])
+@csrf_exempt
 def get_envelope_status(request, envelope_id):
     token = create_jwt_grant_token()
     post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer', 'assertion': token}
@@ -153,6 +150,8 @@ def get_envelope_status(request, envelope_id):
     return HttpResponse(str(response))
 
 
+@api_view(['GET'])
+@csrf_exempt
 def envelopes_list(request):
     """Lista todos os envelopes cadastrados no docusign."""
     token = create_jwt_grant_token()
@@ -163,4 +162,43 @@ def envelopes_list(request):
     base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/search_folders/awaiting_my_signature'
     r = requests.get(base_url, headers={'Authorization': 'Bearer ' + token['access_token']})
     response = r.json()
-    return HttpResponse(str(response))
+    return JsonResponse(response)
+
+
+@api_view(['GET'])
+@csrf_exempt
+def envelope_documents(request, envelope_id):
+    """Lista os documentos de um envelope."""
+    if request.method == 'GET':
+        token = create_jwt_grant_token()
+        post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                     'assertion': token}
+        base_url = 'https://account-d.docusign.com/oauth/token'
+        r = requests.post(base_url, data=post_data)
+        token = r.json()
+        api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
+        envelope_api = EnvelopesApi(api_client)
+        results = envelope_api.list_documents(account_id=ACCOUNT_ID, envelope_id=envelope_id)
+        # return JsonResponse({'data': results})
+        return HttpResponse(results)
+
+
+@api_view(['GET'])
+@csrf_exempt
+def download_documents(request, envelope_id, document_id):
+    """Baixa os documentos de um envelope."""
+    if request.method == 'GET':
+        token = create_jwt_grant_token()
+        post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                     'assertion': token}
+        base_url = 'https://account-d.docusign.com/oauth/token'
+        r = requests.post(base_url, data=post_data)
+        token = r.json()
+        api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
+        envelope_api = EnvelopesApi(api_client)
+        temp_file = envelope_api.get_document(account_id=ACCOUNT_ID,
+                                              document_id=document_id,
+                                              envelope_id=envelope_id)
+        # return FileResponse(temp_file)
+        file = open(temp_file, "rb")
+        return FileResponse(file, as_attachment=True)
