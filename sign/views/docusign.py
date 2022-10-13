@@ -110,9 +110,6 @@ def signature_by_email(token, base64_file_content, signer_email, signer_name):
         envelope_definition = make_envelope(base64_file_content, envelope_args)
         try:
             # Cria e envia o envelope
-            # api_client = ApiClient()
-            # api_client.host = 'https://demo.docusign.net/restapi'
-            # api_client.set_default_header('Authorization', 'Bearer ' + token['access_token'])
             api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
             envelope_api = EnvelopesApi(api_client)
             results = envelope_api.create_envelope(account_id=ACCOUNT_ID,
@@ -180,7 +177,7 @@ def envelope_documents(request, envelope_id):
         envelope_api = EnvelopesApi(api_client)
         results = envelope_api.list_documents(account_id=ACCOUNT_ID, envelope_id=envelope_id)
         # return JsonResponse({'data': results})
-        return HttpResponse(results)
+        return JsonResponse(results)
 
 
 @api_view(['GET'])
@@ -199,6 +196,7 @@ def download_documents(request, envelope_id, document_id):
         temp_file = envelope_api.get_document(account_id=ACCOUNT_ID,
                                               document_id=document_id,
                                               envelope_id=envelope_id)
-        # return FileResponse(temp_file)
+        # temp_file contém o caminho do arquivo na pasta temp
+        # return FileResponse(temp_file)  retorna o caminho
         file = open(temp_file, "rb")
-        return FileResponse(file, as_attachment=True)
+        return FileResponse(file, as_attachment=True)  # Faz download do arquivo.
