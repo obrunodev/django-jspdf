@@ -30,19 +30,23 @@ def docusign_signature(request):
             base_url = 'https://account-d.docusign.com/oauth/token'
             r = requests.post(base_url, data=post_data)
             token = r.json()
-            signer_email = request.POST.get('email')
-            signer_name = request.POST.get('full_name')
-            signer_type = request.POST.get('type')
+            signer_email = request.POST.get('signer_email')
+            signer_name = request.POST.get('signer_name')
+            cc_email = request.POST.get('cc_email')
+            cc_name = request.POST.get('cc_name')
+            # document_file = request.POST.get('document_file')
+            # print(document_file)
+            # signer_type = request.POST.get('type', '')
             with open(os.path.join(BASE_DIR, 'docusign_files/', 'test_file.pdf'), 'rb') as file:
                 content_bytes = file.read()
             base64_file_content = base64.b64encode(content_bytes).decode('ascii')
-            if signer_type != 'email':
-                return JsonResponse({"msg": "Tipo de assinatura inexistente."})
-            envelope_id = signature_by_email(token, base64_file_content, signer_email, signer_name)
+            # if signer_type != 'email':
+            #     return JsonResponse({"msg": "Tipo de assinatura inexistente."})
+            envelope_id = signature_by_email(token, base64_file_content, signer_email, signer_name, cc_name, cc_email)
             url = ''
             return JsonResponse({'docusign_url': url,
                                  'envelope_id': envelope_id,
-                                 'message': 'Docusign',
+                                 'message': 'O envelope foi criado na Docusign',
                                  'error': ''})
             # return JsonResponse({'msg': 'Envelope criado!'})
         except Exception as e:
@@ -70,6 +74,10 @@ def make_envelope(base64_file_content, args):
     env.documents = [document]
     
     # Cria o model recipient do assinante
+    # TODO: Receber recipientes para endpoint
+    # Signer 1: Contratante
+    # Signer 2: Contratado
+    # Signer 3: Testemunha
     signer = Signer(email=args['signer_email'],
                     name=args['signer_name'],
                     recipient_id='1',
@@ -100,12 +108,12 @@ def make_envelope(base64_file_content, args):
     return env
 
 
-def signature_by_email(token, base64_file_content, signer_email, signer_name):
+def signature_by_email(token, base64_file_content, signer_email, signer_name, cc_name, cc_email):
     try:
         envelope_args = {'signer_email': signer_email,
                          'signer_name': signer_name,
-                         'cc_email': 'brunorpdev@gmail.com',
-                         'cc_name': 'Bruno',
+                         'cc_email': cc_email,
+                         'cc_name': cc_name,
                          'status': 'sent'}
         envelope_definition = make_envelope(base64_file_content, envelope_args)
         try:
@@ -144,7 +152,7 @@ def get_envelope_status(request, envelope_id):
     base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}'
     r = requests.get(base_url, headers={'Authorization': 'Bearer ' + token['access_token']})
     response = r.json()
-    return HttpResponse(str(response))
+    return JsonResponse(response)
 
 
 @api_view(['GET'])
@@ -156,7 +164,8 @@ def envelopes_list(request):
     base_url = 'https://account-d.docusign.com/oauth/token'
     r = requests.post(base_url, data=post_data)
     token = r.json()
-    base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/search_folders/awaiting_my_signature'
+    # base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/search_folders/awaiting_my_signature'
+    base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/search_folders/all'
     r = requests.get(base_url, headers={'Authorization': 'Bearer ' + token['access_token']})
     response = r.json()
     return JsonResponse(response)
@@ -173,11 +182,10 @@ def envelope_documents(request, envelope_id):
         base_url = 'https://account-d.docusign.com/oauth/token'
         r = requests.post(base_url, data=post_data)
         token = r.json()
-        api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
-        envelope_api = EnvelopesApi(api_client)
-        results = envelope_api.list_documents(account_id=ACCOUNT_ID, envelope_id=envelope_id)
-        # return JsonResponse({'data': results})
-        return JsonResponse(results)
+        base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}/documents'
+        r = requests.get(base_url, headers={'Authorization': 'Bearer ' + token['access_token']})
+        response = r.json()
+        return JsonResponse(response)
 
 
 @api_view(['GET'])
@@ -195,6 +203,28 @@ def download_documents(request, envelope_id, document_id):
         envelope_api = EnvelopesApi(api_client)
         temp_file = envelope_api.get_document(account_id=ACCOUNT_ID,
                                               document_id=document_id,
+                                              envelope_id=envelope_id)
+        # temp_file contém o caminho do arquivo na pasta temp
+        # return FileResponse(temp_file)  retorna o caminho
+        file = open(temp_file, "rb")
+        return FileResponse(file, as_attachment=True)  # Faz download do arquivo.
+    
+    
+@api_view(['GET'])
+@csrf_exempt
+def download_all_documents(request, envelope_id):
+    """Baixa os documentos de um envelope."""
+    if request.method == 'GET':
+        token = create_jwt_grant_token()
+        post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                     'assertion': token}
+        base_url = 'https://account-d.docusign.com/oauth/token'
+        r = requests.post(base_url, data=post_data)
+        token = r.json()
+        api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
+        envelope_api = EnvelopesApi(api_client)
+        temp_file = envelope_api.get_document(account_id=ACCOUNT_ID,
+                                              document_id="archive",
                                               envelope_id=envelope_id)
         # temp_file contém o caminho do arquivo na pasta temp
         # return FileResponse(temp_file)  retorna o caminho
