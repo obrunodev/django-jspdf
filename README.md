@@ -13,7 +13,13 @@ POST /sign/docusign_signature/
 Body:
 ```json
 {
-    "parameter": "argument"
+    "contractor_email": "contractor@example.com",
+    "contractor_name": "Contractor Example",
+    "hired_email": "hired@example.com",
+    "hired_name": "Hired Example",
+    "witness_email": "witness@example.com",
+    "witness_name": "Witness Example",
+    "document_name": "Uploaded document name"
 }
 ```
 
@@ -25,6 +31,11 @@ GET /sign/envelopes_list/
 Retorna detalhes de um envelope:
 ```
 GET /sign/get_envelope_status/{envelope_id}
+```
+
+Retorna recipientes de um envelope:
+```
+GET /sign/envelopes/{envelope_id}/recipients/
 ```
 
 Lista de documentos em um envelope:
@@ -41,16 +52,8 @@ Faz download de todos os documentos do envelope:
 ```
 GET /sign/envelopes/{envelope_id}/documents/download/
 ```
-Body:
-```json
-{
-    "parameter": "argument"
-}
+
+Rota de feedback do usuário usuário:
 ```
-
-
-```
-GET /sign/docusign_completed/ - Rota usada para retornar um feedback ao usuário.
-
- - Cria um envelope com dados passados e dispara e-mails para os "signers".
+GET /sign/docusign_completed/
 ```
