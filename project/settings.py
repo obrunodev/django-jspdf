@@ -133,7 +133,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ========== ↓ PRIVATE IDS ↓ ==========
 # Docusign
-CLIENT_AUTH_ID = 'd99f26b5-c60d-48bb-b2d0-3fc7d78342ba'  # Settings -> Integrations -> Apps and keys -> Integration Key
-CLIENT_USER_ID = 'c6d82a85-d295-4b80-8655-7ce85922f411'  # Settings -> Integrations -> Apps and keys -> API User ID
-ACCOUNT_ID = '16ffccce-5497-4e35-ad9e-e8f034f9a309'  # Settings -> Integrations -> Apps and keys -> API Account ID
+# ↓ Developer keys ↓
+# CLIENT_AUTH_ID = 'd99f26b5-c60d-48bb-b2d0-3fc7d78342ba'  # Settings -> Integrations -> Apps and keys -> Integration Key
+# CLIENT_USER_ID = 'c6d82a85-d295-4b80-8655-7ce85922f411'  # Settings -> Integrations -> Apps and keys -> API User ID
+# ACCOUNT_ID = '16ffccce-5497-4e35-ad9e-e8f034f9a309'  # Settings -> Integrations -> Apps and keys -> API Account ID
+# ↑ Developer keys ↑
+# ↓ Alstra developer keys ↓
+CLIENT_AUTH_ID = 'ddc5199b-cfc5-4f6c-a33d-abac5a8fc9ea'  # Settings -> Integrations -> Apps and keys -> Integration Key
+CLIENT_USER_ID = 'e84a3846-339c-47f5-9eb9-eb2646f7b389'  # Settings -> Integrations -> Apps and keys -> API User ID
+ACCOUNT_ID = '14fc73b4-b3b5-482c-9cb1-dca05202f29b'  # Settings -> Integrations -> Apps and keys -> API Account ID
+# ↑ Alstra developer keys ↑
 # ========== ↑ PRIVATE IDS ↑ ==========

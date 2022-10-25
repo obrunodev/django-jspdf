@@ -26,11 +26,12 @@ def docusign_signature(request):
             base_url = 'https://account-d.docusign.com/oauth/token'
             r = requests.post(base_url, data=post_data)
             token = r.json()
-            contractor_name = f"{request.POST.get('contractor_name')} {request.POST.get('contractor_surname')}"
+            print(token)
+            contractor_name = f"{request.POST.get('contractor_name')}"
             contractor_email = request.POST.get('contractor_email')
             hired_name = request.POST.get('hired_name')
             hired_email = request.POST.get('hired_email')
-            witness_name = f"{request.POST.get('witness_name')} {request.POST.get('witness_surname')}"
+            witness_name = f"{request.POST.get('witness_name')}"
             witness_email = request.POST.get('witness_email')
             document_name = request.POST.get('document_name')
             document_file = request.FILES['document_file'].read()
@@ -46,10 +47,11 @@ def docusign_signature(request):
                                  'message': 'O envelope foi criado na Docusign',
                                  'error': ''})
         except Exception as e:
-            return JsonResponse({'docsign_url': '',
-                                'envelope_id': '',
-                                'message': 'Internal server error (docusign_signature)',
-                                'error': str(e)})
+            return HttpResponse(f'Erro -> {str(e)}')
+            # return JsonResponse({'docsign_url': '',
+            #                     'envelope_id': '',
+            #                     'message': 'Internal server error (docusign_signature)',
+            #                     'error': str(e)})
 
 
 @api_view(['GET'])
@@ -67,7 +69,7 @@ def get_envelope_status(request, envelope_id):
             response = r.json()
             return JsonResponse(response)
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
 
 
 @api_view(['GET'])
@@ -89,7 +91,7 @@ def envelopes_list(request):
             response = r.json()
             return JsonResponse(response)
         except Exception as error:
-            return JsonResponse({'msg': str(error)})
+            return HttpResponse(str(error))
 
 
 @api_view(['GET'])
@@ -109,7 +111,7 @@ def envelope_recipients(request, envelope_id):
             response = r.json()
             return JsonResponse(response)
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
 
 
 @api_view(['GET'])
@@ -120,7 +122,7 @@ def envelope_documents(request, envelope_id):
         try:
             token = create_jwt_grant_token()
             post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                        'assertion': token}
+                         'assertion': token}
             base_url = 'https://account-d.docusign.com/oauth/token'
             r = requests.post(base_url, data=post_data)
             token = r.json()
@@ -129,7 +131,7 @@ def envelope_documents(request, envelope_id):
             response = r.json()
             return JsonResponse(response)
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
 
 
 @api_view(['GET'])
@@ -140,19 +142,19 @@ def download_documents(request, envelope_id, document_id):
         try:
             token = create_jwt_grant_token()
             post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                        'assertion': token}
+                         'assertion': token}
             base_url = 'https://account-d.docusign.com/oauth/token'
             r = requests.post(base_url, data=post_data)
             token = r.json()
             api_client = utils.create_api_client('https://demo.docusign.net/restapi', token['access_token'])
             envelope_api = EnvelopesApi(api_client)
             temp_file = envelope_api.get_document(account_id=ACCOUNT_ID,
-                                                document_id=document_id,
-                                                envelope_id=envelope_id)
+                                                  document_id=document_id,
+                                                  envelope_id=envelope_id)
             file = open(temp_file, "rb")
             return FileResponse(file, as_attachment=True)  # Faz download do arquivo.
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
 
 
 @api_view(['GET'])
@@ -175,7 +177,19 @@ def download_all_documents(request, envelope_id):
             file = open(temp_file, "rb")
             return FileResponse(file, as_attachment=True)  # Faz download do arquivo.
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
+
+
+@api_view(['POST'])
+@csrf_exempt
+def envelope_cancel(request):
+    """Altera o status do envelope para void (Cancelado).
+    
+    Args:
+    * void_reason: Motivo do cancelamento do contrato.
+    """
+    if request.method == 'POST':
+        pass
 
 
 @api_view(['GET'])
@@ -194,7 +208,7 @@ def get_user_id(request, user_email):
                                 headers={'Authorization': 'Bearer ' + token['access_token']})
             return JsonResponse(user_id)
         except Exception as error:
-            return JsonResponse({'error': str(error)})
+            return HttpResponse(str(error))
 
 
 def docusign_completed(request):
@@ -238,13 +252,14 @@ def signature_by_email(token, base64_file_content,
             envelope_api = EnvelopesApi(api_client)
             results = envelope_api.create_envelope(account_id=ACCOUNT_ID,
                                                    envelope_definition=envelope_definition)
+            print('Linha 254')
             envelope_id = results.envelope_id
             return envelope_id
         except Exception as e:
             return JsonResponse({'docsign_url': '',
                                  'envelope id': '',
                                  'message':'Internal server error (Erro ao criar envelope)',
-                                 'error': e})
+                                 'error': str(e)})
     except Exception as e:
         return JsonResponse({'docsign url': '',
                              'envelope_id': '',
@@ -258,14 +273,14 @@ def make_envelope(base64_file_content, args):
     """
     try:
         # Cria uma definição de envelope
-        env = EnvelopeDefinition(email_subject='Por favor, assine estes documentos.')
+        env = EnvelopeDefinition(email_subject='Por favor, assine estes documentos.',
+                                 email_blurb='Assine o documento clicanco no link acima.')
         
         # Cria o objeto documento
         document = Document(document_base64=base64_file_content,
                             name=args['document_name'],
                             file_extension='pdf',
                             document_id='1')
-        print(base64_file_content)
         env.documents = [document]
         
         # === ↓ CREATING SIGNERS ↓ ===
