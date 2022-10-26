@@ -57,3 +57,15 @@ Rota de feedback do usuário usuário:
 ```
 GET /sign/docusign_completed/
 ```
+
+Cancelar um envelope:
+```
+POST /sign/envelopes/{envelope_id}/cancel/
+```
+Body:
+```json
+{
+    "envelopeId": "ID do envelope",
+    "voidedReason": "Motivo para cancelar o envelope."
+}
+```

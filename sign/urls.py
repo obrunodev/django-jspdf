@@ -16,4 +16,5 @@ urlpatterns = [
     path('envelopes/<str:envelope_id>/recipients/', docusign.envelope_recipients, name='envelope_recipients'),
     path('envelopes/<str:envelope_id>/documents/<str:document_id>/download/', docusign.download_documents, name='download_documents'),
     path('envelopes/<str:envelope_id>/documents/download/', docusign.download_all_documents, name='download_all_documents'),
+    path('envelopes/<str:envelope_id>/cancel/', docusign.envelope_cancel, name='envelopes_cancel')
 ]

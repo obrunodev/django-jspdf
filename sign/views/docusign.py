@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, FileRe
 from django.views.decorators.csrf import csrf_exempt
 from docusign_esign import (RecipientViewRequest, EnvelopeDefinition, Document,
                             Signer, SignHere, Tabs, Recipients, ApiClient,
-                            EnvelopesApi, Text, DateSigned, CarbonCopy)
+                            EnvelopesApi, Text, DateSigned, CarbonCopy, Envelope)
 from project.settings import ACCOUNT_ID, BASE_DIR, CLIENT_AUTH_ID, CLIENT_USER_ID
 from rest_framework.decorators import api_view
 from sign import utils
@@ -26,7 +26,6 @@ def docusign_signature(request):
             base_url = 'https://account-d.docusign.com/oauth/token'
             r = requests.post(base_url, data=post_data)
             token = r.json()
-            print(token)
             contractor_name = f"{request.POST.get('contractor_name')}"
             contractor_email = request.POST.get('contractor_email')
             hired_name = request.POST.get('hired_name')
@@ -182,14 +181,33 @@ def download_all_documents(request, envelope_id):
 
 @api_view(['POST'])
 @csrf_exempt
-def envelope_cancel(request):
+def envelope_cancel(request, envelope_id):
     """Altera o status do envelope para void (Cancelado).
     
     Args:
-    * void_reason: Motivo do cancelamento do contrato.
+    * voidedReason: Motivo do cancelamento do contrato.
     """
     if request.method == 'POST':
-        pass
+        try:
+            envelope_id = request.POST.get('envelope_id')
+            voidedReason = request.POST.get('voidedReason')
+            token = create_jwt_grant_token()
+            post_data = {'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                         'assertion': token}
+            base_url = 'https://account-d.docusign.com/oauth/token'
+            r = requests.post(base_url, data=post_data)
+            token = r.json()
+            base_url = f'https://demo.docusign.net/restapi/v2.1/accounts/{ACCOUNT_ID}/envelopes/{envelope_id}'
+            data = {
+                "status": "voided",
+                "voidedReason": voidedReason
+            }
+            r = requests.put(base_url, json=data, headers={'Authorization': 'Bearer ' + token['access_token']})
+            response = r.json()
+            return JsonResponse(response)
+        except Exception as error:
+            print(error)
+            return HttpResponse(error)
 
 
 @api_view(['GET'])
@@ -252,7 +270,6 @@ def signature_by_email(token, base64_file_content,
             envelope_api = EnvelopesApi(api_client)
             results = envelope_api.create_envelope(account_id=ACCOUNT_ID,
                                                    envelope_definition=envelope_definition)
-            print('Linha 254')
             envelope_id = results.envelope_id
             return envelope_id
         except Exception as e:
