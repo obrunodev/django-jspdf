@@ -4,3 +4,4 @@ venv/
 __pycache__
 private.key
 docusign_files/
+db.sqlite3
