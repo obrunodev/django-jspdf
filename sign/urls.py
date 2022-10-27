@@ -1,13 +1,9 @@
 from django.urls import path
 
-from sign.views import general
 from sign.views import docusign
 
 app_name = 'sign'
 urlpatterns = [
-    path('', general.index, name='index'),
-    path('make_envelope/', general.make_envelope, name='make_envelope'),
-    
     path('get_envelope_status/<str:envelope_id>', docusign.get_envelope_status, name='get_envelope_status'),
     path('envelopes_list/', docusign.envelopes_list, name='envelopes_list'),
     path('docusign_signature/', docusign.docusign_signature, name='docusign_signature'),
