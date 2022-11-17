@@ -21,7 +21,7 @@
                 {% for pergunta in perguntas %}
                     <tr>
                         <td>{{ pergunta.nome }}</td>
-                        <td>{{ pergunta.pergunta|truncatechars_html:"60" }}</td>
+                        <td>{{ pergunta.titulo }}</td>
                         <td>{{ pergunta.criado_em }}</td>
                         <td>
                             <a href="{% url 'perguntas:responder' pergunta.id %}">Responder</a>

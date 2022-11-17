@@ -1,0 +1,56 @@
+<section>
+    <div class="card">
+        <div class="card-body">
+            <h3>{{ pergunta.titulo }}</h3>
+            <span class="form-text">por {{ pergunta.nome }}.</span>
+            <p>{{ pergunta.descricao }}</p>
+            <p class="form-text">Pergunta feita em: {{ pergunta.criado_em }}</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <a href="#responder" class="btn btn-primary my-2">Quero responder</a>
+    </div>
+
+    <hr>
+
+    <h4>Respostas:</h4>
+    {% for resposta in pergunta.respostas.all|dictsortreversed:"id" %}
+        <div class="card my-2">
+            <div class="card-body pt-2 pb-0">
+                <div class="d-flex justify-content-between">
+                    <h5 class="mb-0">
+                        {{ resposta.nome }}
+                        {% if pergunta.nome == resposta.nome %}
+                            <span class="form-text">Autor</span>
+                        {% endif %}
+                    </h5>
+                    <p>{{ resposta.criado_em }}</p>
+                </div>
+                <p>{{ resposta|linebreaks }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p>Não há respostas ainda.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h4 id="responder">Responder:</h4>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+            {{ field }}
+
+            {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+
+            {% if field.errors %}
+                {{ field.errors }}
+            {% endif %}
+        {% endfor %}
+        <input type="submit" value="Responder" class="btn btn-primary my-3">
+    </form>
+</section>

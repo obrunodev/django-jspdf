@@ -29,10 +29,12 @@ def perguntas_create(request):
 
 def perguntas_responder(request, pergunta_id):
     """Função que apresenta respostas e responde a pergunta."""
+    ultimas_perguntas = Pergunta.objects.order_by('-id')[:3]
     pergunta = get_object_or_404(Pergunta, id=pergunta_id)
     if request.method == 'GET':
         form = RespostaForm()
         context = {'pergunta': pergunta,
+                   'ultimas_perguntas': ultimas_perguntas,
                    'form': form}
         return render(request, 'perguntas/responder.html', context)
     
