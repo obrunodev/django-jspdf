@@ -11,14 +11,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Perguntas</h1>
-        <a href="{% url 'perguntas:create' %}">Fazer uma pergunta</a>
-        <p>Você pode responder uma pergunta se souber a resposta.</p>
-        <ul>
-            {% for pergunta in perguntas %}
-                <li>{{ pergunta }}</li>
-            {% endfor %}
-        </ul>
+        <h1>Faça uma pergunta</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Perguntar">
+        </form>
     </div>
 </body>
 </html>
