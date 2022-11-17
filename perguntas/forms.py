@@ -11,7 +11,8 @@ class PerguntaForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['nome'].widget.attrs.update({'class': 'form-control'})
+        self.fields['nome'].widget.attrs.update({'class': 'form-control',
+                                                 'placeholder': 'Digite seu nome'})
         self.fields['pergunta'].widget.attrs.update({'class': 'form-control'})
 
 
@@ -23,5 +24,6 @@ class RespostaForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['nome'].widget.attrs.update({'class': 'form-control'})
+        self.fields['nome'].widget.attrs.update({'class': 'form-control',
+                                                 'placeholder': 'Digite seu nome'})
         self.fields['resposta'].widget.attrs.update({'class': 'form-control'})

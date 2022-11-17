@@ -6,13 +6,30 @@
 
     <div class="container">
         <h1>Perguntas</h1>
+        <p>Você pode criar uma nova pergunta, ou responder uma das existentes.</p>
         <a href="{% url 'perguntas:create' %}" class="btn btn-primary my-2">Fazer uma pergunta</a>
-        <p>Você pode responder uma pergunta se souber a resposta.</p>
-        <ul>
-            {% for pergunta in perguntas %}
-                <li>{{ pergunta }} <strong>{{ pergunta.respostas.count }} respostas.</strong> <a href="{% url 'perguntas:responder' pergunta.id %}">Responder</a></li>
-            {% endfor %}
-        </ul>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Autor</th>
+                    <th>Pergunta</th>
+                    <th>Data e hora</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pergunta in perguntas %}
+                    <tr>
+                        <td>{{ pergunta.nome }}</td>
+                        <td>{{ pergunta.pergunta|truncatechars_html:"60" }}</td>
+                        <td>{{ pergunta.criado_em }}</td>
+                        <td>
+                            <a href="{% url 'perguntas:responder' pergunta.id %}">Responder</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 {% endblock content %}
