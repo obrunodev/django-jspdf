@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listar perguntas</title>
-    <style>
-        .container { margin-left: 200px; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Perguntar{% endblock title %}
+
+{% block content %}
+
     <div class="container">
         <h1>Faça uma pergunta</h1>
 
@@ -19,5 +13,5 @@
             <input type="submit" value="Perguntar">
         </form>
     </div>
-</body>
-</html>
+    
+{% endblock content %}

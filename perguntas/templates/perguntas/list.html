@@ -1,24 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Listar perguntas</title>
-        <style>
-            .container { margin-left: 200px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Perguntas</h1>
-            <a href="{% url 'perguntas:create' %}">Fazer uma pergunta</a>
-            <p>Você pode responder uma pergunta se souber a resposta.</p>
-            <ul>
-                {% for pergunta in perguntas %}
-                    <li>{{ pergunta }} <strong>{{ pergunta.respostas.count }} respostas.</strong> <a href="{% url 'perguntas:responder' pergunta.id %}">Responder</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Perguntas{% endblock title %}
+
+{% block content %}
+
+    <div class="container">
+        <h1>Perguntas</h1>
+        <a href="{% url 'perguntas:create' %}">Fazer uma pergunta</a>
+        <p>Você pode responder uma pergunta se souber a resposta.</p>
+        <ul>
+            {% for pergunta in perguntas %}
+                <li>{{ pergunta }} <strong>{{ pergunta.respostas.count }} respostas.</strong> <a href="{% url 'perguntas:responder' pergunta.id %}">Responder</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock content %}

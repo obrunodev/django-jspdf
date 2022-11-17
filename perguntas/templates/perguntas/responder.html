@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listar perguntas</title>
-    <style>
-        .container { margin: 0 100px; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Responder{% endblock title %}
+
+{% block content %}
+
     <div class="container">
         <h2>{{ pergunta }}</h2>
 
@@ -32,5 +26,5 @@
             <input type="submit" value="Responder">
         </form>
     </div>
-</body>
-</html>
+
+{% endblock content %}
