@@ -5,9 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listar perguntas</title>
+    <style>
+        .container { margin-left: 200px; }
+    </style>
 </head>
 <body>
-    <h1>Perguntas</h1>
-    <p>Você pode responder uma pergunta se souber a resposta.</p>
+    <div class="container">
+        <h1>Perguntas</h1>
+        <a href="#">Fazer uma pergunta</a>
+        <p>Você pode responder uma pergunta se souber a resposta.</p>
+        <ul>
+            {% for pergunta in perguntas %}
+                <li>{{ pergunta }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
