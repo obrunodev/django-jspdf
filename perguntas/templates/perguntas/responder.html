@@ -6,24 +6,42 @@
 
     <div class="container">
         <h2>{{ pergunta }}</h2>
+        <p>Pergunta feita em: {{ pergunta.criado_em }}</p>
 
         <hr>
         <h4>Respostas:</h4>
-        <ul>
-            {% for resposta in pergunta.respostas.all %}
-                <li style="margin: 4px 0;">
-                    <strong>{{ resposta.nome }} respondeu:</strong> {{ resposta }} <strong>no dia</strong> {{ resposta.criado_em }}
-                </li>
+            {% for resposta in pergunta.respostas.all|dictsortreversed:"id" %}
+                <div class="card my-2">
+                    <div class="card-body pt-2 pb-0">
+                        <div class="d-flex justify-content-between">
+                            <h5>{{ resposta.nome }}</h5>
+                            <p>{{ resposta.criado_em }}</p>
+                        </div>
+                        <p>{{ resposta }}</p>
+                    </div>
+                </div>
             {% empty %}
-                <li>Não há respostas ainda.</li>
+                <p>Não há respostas ainda.</p>
             {% endfor %}
-        </ul>
         <hr>
+
+        <h4>Responder:</h4>
 
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Responder">
+            {% for field in form %}
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+
+                {% if field.errors %}
+                    {{ field.errors }}
+                {% endif %}
+            {% endfor %}
+            <input type="submit" value="Responder" class="btn btn-primary my-3">
         </form>
     </div>
 

@@ -6,7 +6,7 @@
 
     <div class="container">
         <h1>Perguntas</h1>
-        <a href="{% url 'perguntas:create' %}">Fazer uma pergunta</a>
+        <a href="{% url 'perguntas:create' %}" class="btn btn-primary my-2">Fazer uma pergunta</a>
         <p>Você pode responder uma pergunta se souber a resposta.</p>
         <ul>
             {% for pergunta in perguntas %}
