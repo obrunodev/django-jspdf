@@ -1,5 +1,5 @@
-from django.shortcuts import redirect, render
-from perguntas.forms import PerguntaForm
+from django.shortcuts import get_object_or_404, redirect, render
+from perguntas.forms import PerguntaForm, RespostaForm
 from perguntas.models import Pergunta
 
 
@@ -25,3 +25,22 @@ def perguntas_create(request):
         context = {'form': form}
     
     return render(request, 'perguntas/create.html', context)
+
+
+def perguntas_responder(request, pergunta_id):
+    """Função que apresenta respostas e responde a pergunta."""
+    pergunta = get_object_or_404(Pergunta, id=pergunta_id)
+    if request.method == 'GET':
+        form = RespostaForm()
+        context = {'pergunta': pergunta,
+                   'form': form}
+        return render(request, 'perguntas/responder.html', context)
+    
+    if request.method == 'POST':
+        form = RespostaForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.pergunta = pergunta
+            obj.save()
+            return redirect('perguntas:responder',
+                            pergunta_id=pergunta.id)

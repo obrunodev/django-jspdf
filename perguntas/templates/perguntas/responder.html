@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listar perguntas</title>
+    <style>
+        .container { margin: 0 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>{{ pergunta }}</h2>
+
+        <hr>
+        <h4>Respostas:</h4>
+        <ul>
+            {% for resposta in pergunta.respostas.all %}
+                <li style="margin: 4px 0;">
+                    <strong>{{ resposta.nome }} respondeu:</strong> {{ resposta }} <strong>no dia</strong> {{ resposta.criado_em }}
+                </li>
+            {% empty %}
+                <li>Não há respostas ainda.</li>
+            {% endfor %}
+        </ul>
+        <hr>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Responder">
+        </form>
+    </div>
+</body>
+</html>
