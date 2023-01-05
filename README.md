@@ -1,3 +1,5 @@
-# Projeto de perguntas e respostas
+# React Experience
 
-Sistema de perguntas e respostas com Django.
+Projeto com React JS com intuito de adquirir conhecimento.
+
+Init do projeto feito com Vite
