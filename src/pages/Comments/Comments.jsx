@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Alert, Container, Card } from 'react-bootstrap';
-import { Comment } from '../components/Comment';
-import { NavigationBar } from '../components/NavigationBar';
+import { Comment } from './components/Comment';
+import { Heading } from '../../components/Heading';
 
 export function Comments() {
   const variants = ['primary', 'warning', 'danger'];
@@ -22,7 +22,7 @@ export function Comments() {
 
   return (
     <div>
-      <NavigationBar />
+      <Heading />
       <Container className='my-3'>
         <Card style={{
           background: "#222",

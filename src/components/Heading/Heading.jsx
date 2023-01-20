@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 
-export function NavigationBar() {
+export function Heading() {
   return (
     <Navbar bg="light" expand="lg">
       <Container>
@@ -12,7 +12,6 @@ export function NavigationBar() {
           <Nav className="me-auto">
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="/comments">Comentários</Nav.Link>
-            <Nav.Link href="/users">Usuários</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
