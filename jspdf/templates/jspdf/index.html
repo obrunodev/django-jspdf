@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSPdf</title>
+    <style>
+        .aqua-square {
+            background: aqua;
+            height: 150px;
+            width: 150px;
+        }
+        .title { color: red; }
+        .card {
+            border: solid 1px #666;
+            border-radius: 10px;
+            margin: auto;
+            margin-top: 100px;
+            padding: 16px;
+            width: 500px;
+        }
+        .card .btn {
+            background: #222;
+            border: solid 1px grey;
+            border-radius: 5px;
+            color: #eee;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        .card input {
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        .my { margin: 15px 0; }
+    </style>
+</head>
+<body>
+    
+    <div class="card">
+        <img src="{% static 'img/teste.jpg' %}" height="150px" width="150px" alt="">
+
+        <button onclick="gerarPDF()" class="btn">
+            Gerar PDF
+        </button>
+
+        <input type="email" name="email">
+        <button onclick="enviarPDF()" class="btn">
+            Enviar PDF
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.1/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        window.jsPDF = window.jspdf.jsPDF;
+
+        var document_content = `
+            <div class="aqua-square"></div>
+
+            <img src="{% static 'img/teste.jpg' %}" height="150px" width="150px" alt="">
+
+            <h1 class="title">Documento PDF (h1)</h1>
+            <h2 class="title">Documento PDF (h2)</h2>
+            <h3 class="title">Documento PDF (h3)</h3>
+
+            <p>Este documento pode receber um corpo com tags HTML. (p)</p>
+
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+
+            <ol>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ol>
+        `
+
+        function gerarPDF() {
+            const doc = new jsPDF();
+            doc.html(document_content, {
+                callback: function(doc) { doc.output('save', 'PCA.pdf') },
+                x: 15,
+                y: 15,
+                width: 170,
+                windowWidth: 650
+            });
+        }
+
+        function enviarPDF() {
+            const doc = new jsPDF();
+            doc.html(document_content, {
+                callback: function(doc) {
+                    const csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+                    let obj = doc.output('datauristring');
+                    $.ajax({
+                        url: "{% url 'jspdf:send_pdf' %}",
+                        data: {
+                            'file': obj,
+                            'csrfmiddlewaretoken': csrftoken
+                        },
+                        method: "post",
+                        success: function(response) { console.log('Finalizado') }
+                    });
+                },
+                x: 15,
+                y: 15,
+                width: 170,
+                windowWidth: 650
+            });
+        }
+    </script>
+</body>
+</html>
